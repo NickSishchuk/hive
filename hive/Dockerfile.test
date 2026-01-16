@@ -1,0 +1,23 @@
+# Test runner image (Alpine = ~400MB vs Ubuntu = ~800MB)
+FROM maven:3.9-eclipse-temurin-21-alpine
+
+WORKDIR /app
+
+# Install Docker CLI
+RUN apk add --no-cache docker-cli
+
+# Copy pom.xml first for dependency caching
+COPY pom.xml .
+
+# Download dependencies (cached if pom.xml doesn't change)
+RUN mvn dependency:go-offline -B
+
+# Copy source code
+COPY src ./src
+
+# Copy and setup test runner script
+COPY scripts/run-tests.sh /run-tests.sh
+RUN chmod +x /run-tests.sh
+
+ENTRYPOINT ["/run-tests.sh"]
+CMD ["all"]

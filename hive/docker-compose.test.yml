@@ -1,0 +1,22 @@
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: hive-test
+    volumes:
+      # Mount Docker socket for Testcontainers to create sibling containers
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Cache Maven dependencies between runs
+      - maven-cache:/root/.m2
+    environment:
+      - TESTCONTAINERS_RYUK_DISABLED=false
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
+
+volumes:
+  maven-cache:

@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: hive-test
+
+  # JPA - create-drop for clean test state
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+# Disable actuator during tests
+management:
+  endpoints:
+    enabled-by-default: false
+
+# Quieter logging for tests
+logging:
+  level:
+    root: WARN
+    com.hive: INFO
+    org.testcontainers: INFO
