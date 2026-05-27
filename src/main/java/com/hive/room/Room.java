@@ -14,16 +14,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class Room {
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
+	private UUID id;
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
+	@PrePersist
+	protected void onCreate() {
+		createdAt = LocalDateTime.now();
+	}
 }

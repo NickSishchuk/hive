@@ -16,32 +16,25 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class Session {
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
+	private UUID id;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "room_id", nullable = false)
+	private Room room;
+	@Column(name = "started_at", nullable = false)
+	private LocalDateTime startedAt;
+	@Column(name = "ended_at")
+	private LocalDateTime endedAt;
+	@Column(name = "duration_minutes")
+	private int durationMinutes;
+	@Column(name = "pomodoro_count")
+	private int pomodoroCount;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
-    private Room room;
-
-    @Column(name = "started_at", nullable = false)
-    private LocalDateTime startedAt;
-
-    @Column(name = "ended_at")
-    private LocalDateTime endedAt;
-
-    @Column(name = "duration_minutes")
-    private int durationMinutes;
-
-    @Column(name = "pomodoro_count")
-    private int pomodoroCount;
-
-    public boolean isActive() {
-        return endedAt == null;
-    }
+	public boolean isActive() {
+		return endedAt == null;
+	}
 }
