@@ -17,7 +17,7 @@ services:
       retries: 5
 
   app:
-    build: .
+    build: ./backend
     container_name: hive-app
     ports:
       - "8080:8080"
@@ -33,6 +33,14 @@ services:
       postgres:
         condition: service_healthy
 
+  frontend:
+    build: ./frontend
+    container_name: hive-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - app
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: hive-pgadmin
@@ -44,6 +52,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
 
 volumes:
   hive-postgres-data:
