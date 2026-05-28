@@ -10,4 +10,6 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
     boolean existsByUserAndEndedAtIsNull(User user);
     @Query("SELECT COALESCE(SUM(s.durationMinutes), 0) FROM Session s WHERE s.user = :user AND s.startedAt >= :from AND s.endedAt IS NOT NULL")
     int sumMinutesByUserSince(User user, LocalDateTime from);
+    @Query("SELECT COUNT(s) FROM Session s WHERE s.endedAt IS NULL")
+    long countActiveSessions();
 }

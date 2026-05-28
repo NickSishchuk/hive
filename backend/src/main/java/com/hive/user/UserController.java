@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -43,6 +44,13 @@ public class UserController {
 	@Operation(summary = "Get current user statistics and streaks")
 	public StatsResponse stats(@AuthenticationPrincipal User user) {
 		return sessionService.getStats(user);
+	}
+
+	@DeleteMapping("/me")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Delete current user account")
+	public void deleteMe(@AuthenticationPrincipal User user) {
+		userRepository.delete(user);
 	}
 
 	public record UpdateMeRequest(

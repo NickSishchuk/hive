@@ -25,6 +25,14 @@ client.interceptors.response.use(
   async (err) => {
     const original = err.config
 
+    // Handle 403 (Forbidden) - user session is invalid, redirect to login
+    if (err.response?.status === 403) {
+      const { logout } = useAuthStore.getState()
+      logout()
+      window.location.href = '/'
+      return Promise.reject(err)
+    }
+
     // Only attempt refresh on 401, once per request
     if (err.response?.status !== 401 || original._retry) {
       return Promise.reject(err)

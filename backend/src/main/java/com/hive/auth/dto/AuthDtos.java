@@ -6,4 +6,5 @@ public class AuthDtos {
     public record RefreshRequest(@NotBlank String refreshToken) {}
     public record AuthResponse(String accessToken, String refreshToken, UserDto user) {}
     public record UserDto(String id, String email, String name) {}
+    public record ChangePasswordRequest(@NotBlank String currentPassword, @NotBlank @Size(min=8) String newPassword) {}
 }

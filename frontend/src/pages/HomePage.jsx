@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import AppLayout from '../components/layout/AppLayout'
 import { useAuthStore } from '../store/authStore'
 import { getStats } from '../api/user'
+import { getOnlineCount } from '../api/session'
 
 // Read pomodoro settings from localStorage (set in SettingsPage)
 const getPomodoroLabel = () => {
@@ -16,11 +17,13 @@ export default function HomePage() {
   const user     = useAuthStore((s) => s.user)
 
   const { data: stats } = useQuery({ queryKey: ['stats'], queryFn: getStats })
+  const { data: onlineData } = useQuery({ queryKey: ['onlineCount'], queryFn: getOnlineCount, refetchInterval: 10000 })
 
   const firstName    = user?.name?.split(' ')[0] ?? ''
   const todayHours   = stats ? (stats.todayMinutes / 60).toFixed(1) : '—'
   const streak       = stats?.streakCurrent ?? '—'
   const totalSessions = stats?.totalSessions ?? '—'
+  const onlineCount = onlineData?.count ?? 0
 
   return (
     <AppLayout>
@@ -61,12 +64,11 @@ export default function HomePage() {
         </div>
 
         {/* Online count */}
-        {/* TODO: replace hardcoded value with GET /api/rooms/online-count once backend adds it */}
         <div className="flex items-center justify-center gap-2 mb-5 text-sm text-gray-600">
           <span className="font-semibold">Зараз працюють</span>
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
-            <span className="text-gray-500">247 онлайн</span>
+            <span className="text-gray-500">{onlineCount} онлайн</span>
           </span>
         </div>
 

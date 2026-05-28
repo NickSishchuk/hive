@@ -22,9 +22,14 @@ server:
   port: 8080
 hive:
   jwt:
-    secret: ${JWT_SECRET:your-256-bit-secret-change-in-production-please}
+    secret: ${JWT_SECRET:your-super-secret-256-bit-key-that-is-long-enough-for-jwt-hs256}
     access-token-expiration-ms: 900000
     refresh-token-expiration-days: 30
+livekit:
+  url: ${LIVEKIT_URL:https://your-project.livekit.cloud}
+  api-key: ${LIVEKIT_API_KEY:your_api_key}
+  api-secret: ${LIVEKIT_API_SECRET:your_api_secret}
+  ws-url: ${LIVEKIT_WS_URL:wss://your-project.livekit.cloud}
 ---
 spring:
   config:

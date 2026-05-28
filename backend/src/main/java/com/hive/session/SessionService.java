@@ -1,9 +1,13 @@
 package com.hive.session;
 
+import com.hive.common.config.LiveKitProperties;
 import com.hive.common.exception.ResourceNotFoundException;
 import com.hive.room.MatchmakingService;
 import com.hive.session.dto.SessionDtos.*;
 import com.hive.user.*;
+import io.livekit.server.AccessToken;
+import io.livekit.server.RoomJoin;
+import io.livekit.server.RoomName;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +24,7 @@ public class SessionService {
 	private final UserStatsRepository userStatsRepository;
 	private final StatsService statsService;
 	private final MatchmakingService matchmakingService;
+	private final LiveKitProperties livekitProperties;
 
 	@Transactional
 	public StartSessionResponse startSession(User user) {
@@ -27,7 +32,8 @@ public class SessionService {
 			throw new IllegalStateException("You already have an active session");
 		var room = matchmakingService.findOrCreateRoom(user);
 		var session = sessionRepository.save(Session.builder().user(user).room(room).startedAt(LocalDateTime.now()).build());
-		return new StartSessionResponse(session.getId(), room.getId(), session.getStartedAt());
+		String livekitToken = generateLiveKitToken(user, room.getId());
+		return new StartSessionResponse(session.getId(), room.getId(), session.getStartedAt(), livekitToken, livekitProperties.getWsUrl());
 	}
 
 	@Transactional
@@ -58,5 +64,20 @@ public class SessionService {
 		int todayMinutes = sessionRepository.sumMinutesByUserSince(user, LocalDateTime.now().toLocalDate().atStartOfDay());
 		int weekMinutes = sessionRepository.sumMinutesByUserSince(user, LocalDateTime.now().minusDays(7));
 		return new StatsResponse(stats.getTotalMinutes(), stats.getTotalSessions(), stats.getStreakCurrent(), stats.getStreakMax(), todayMinutes, weekMinutes);
+	}
+
+	private String generateLiveKitToken(User user, UUID roomId) {
+		try {
+			AccessToken token = new AccessToken(
+				livekitProperties.getApiKey(),
+				livekitProperties.getApiSecret()
+			);
+			token.setName(user.getName());
+			token.setIdentity(user.getId().toString());
+			token.addGrants(new RoomJoin(true), new RoomName(roomId.toString()));
+			return token.toJwt();
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to generate LiveKit token", e);
+		}
 	}
 }

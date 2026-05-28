@@ -29,3 +29,10 @@ export const endSession = (sessionId, payload) =>
  */
 export const getSessionHistory = () =>
   client.get('/sessions/history').then((r) => r.data)
+
+/**
+ * GET /api/rooms/online-count
+ * @returns {Promise<{ count: number }>}
+ */
+export const getOnlineCount = () =>
+  client.get('/rooms/online-count').then((r) => r.data)

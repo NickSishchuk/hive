@@ -3,7 +3,7 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 public class SessionDtos {
-    public record StartSessionResponse(UUID sessionId, UUID roomId, LocalDateTime startedAt) {}
+    public record StartSessionResponse(UUID sessionId, UUID roomId, LocalDateTime startedAt, String livekitToken, String livekitUrl) {}
     public record EndSessionRequest(@NotNull @Min(0) Integer pomodoroCount) {}
     public record EndSessionResponse(UUID sessionId, int durationMinutes, int pomodoroCount, LocalDateTime startedAt, LocalDateTime endedAt) {}
     public record SessionHistoryItem(UUID sessionId, UUID roomId, int durationMinutes, int pomodoroCount, LocalDateTime startedAt, LocalDateTime endedAt) {}
