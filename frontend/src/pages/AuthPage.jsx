@@ -18,10 +18,38 @@ export default function AuthPage() {
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const [regForm,   setRegForm]   = useState({ email: '', name: '', password: '', confirm: '' })
+  const [loginErrors, setLoginErrors] = useState({})
+  const [regErrors, setRegErrors] = useState({})
+
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+
+  const validateLogin = () => {
+    const errors = {}
+    if (!loginForm.email) errors.email = 'Це поле є обов\'язковим'
+    else if (!isValidEmail(loginForm.email)) errors.email = 'Будь ласка введіть коректну електронну пошту'
+    if (!loginForm.password) errors.password = 'Це поле є обов\'язковим'
+    setLoginErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const validateRegister = () => {
+    const errors = {}
+    if (!regForm.email) errors.email = 'Це поле є обов\'язковим'
+    else if (!isValidEmail(regForm.email)) errors.email = 'Будь ласка введіть коректну електронну пошту'
+    if (!regForm.name) errors.name = 'Це поле є обов\'язковим'
+    if (!regForm.password) errors.password = 'Це поле є обов\'язковим'
+    if (!regForm.confirm) errors.confirm = 'Це поле є обов\'язковим'
+    if (regForm.password && regForm.confirm && regForm.password !== regForm.confirm) {
+      errors.confirm = 'Паролі не збігаються'
+    }
+    setRegErrors(errors)
+    return Object.keys(errors).length === 0
+  }
 
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
+    if (!validateLogin()) return
     setLoading(true)
     try {
       const data = await apiLogin(loginForm)
@@ -37,7 +65,7 @@ export default function AuthPage() {
   const handleRegister = async (e) => {
     e.preventDefault()
     setError('')
-    if (regForm.password !== regForm.confirm) { setError('Паролі не збігаються'); return }
+    if (!validateRegister()) return
     setLoading(true)
     try {
       const data = await apiRegister({ email: regForm.email, name: regForm.name, password: regForm.password })
@@ -85,13 +113,15 @@ export default function AuthPage() {
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
                   <label className={LABEL}>Email</label>
-                  <input type="email" placeholder="your@email.com" required className={INPUT}
-                    value={loginForm.email} onChange={e => setLoginForm(f => ({ ...f, email: e.target.value }))} />
+                  <input type="text" placeholder="your@email.com" className={INPUT}
+                    value={loginForm.email} onChange={e => { setLoginForm(f => ({ ...f, email: e.target.value })); setLoginErrors(e => ({ ...e, email: '' })) }} />
+                  {loginErrors.email && <p className="text-xs text-red-500 mt-1">{loginErrors.email}</p>}
                 </div>
                 <div>
                   <label className={LABEL}>Пароль</label>
-                  <input type="password" required className={INPUT}
-                    value={loginForm.password} onChange={e => setLoginForm(f => ({ ...f, password: e.target.value }))} />
+                  <input type="password" className={INPUT}
+                    value={loginForm.password} onChange={e => { setLoginForm(f => ({ ...f, password: e.target.value })); setLoginErrors(e => ({ ...e, password: '' })) }} />
+                  {loginErrors.password && <p className="text-xs text-red-500 mt-1">{loginErrors.password}</p>}
                 </div>
                 <button type="submit" disabled={loading}
                   className="w-full py-2.5 bg-brand text-white rounded-lg font-semibold hover:bg-brand-hover transition-colors mt-1 disabled:opacity-60">
@@ -111,23 +141,27 @@ export default function AuthPage() {
               <form onSubmit={handleRegister} className="space-y-4">
                 <div>
                   <label className={LABEL}>Email</label>
-                  <input type="email" placeholder="your@email.com" required className={INPUT}
-                    value={regForm.email} onChange={e => setRegForm(f => ({ ...f, email: e.target.value }))} />
+                  <input type="text" placeholder="your@email.com" className={INPUT}
+                    value={regForm.email} onChange={e => { setRegForm(f => ({ ...f, email: e.target.value })); setRegErrors(e => ({ ...e, email: '' })) }} />
+                  {regErrors.email && <p className="text-xs text-red-500 mt-1">{regErrors.email}</p>}
                 </div>
                 <div>
                   <label className={LABEL}>Ваше ім'я</label>
-                  <input type="text" placeholder="Your Name" required minLength={2} className={INPUT}
-                    value={regForm.name} onChange={e => setRegForm(f => ({ ...f, name: e.target.value }))} />
+                  <input type="text" placeholder="Your Name" className={INPUT}
+                    value={regForm.name} onChange={e => { setRegForm(f => ({ ...f, name: e.target.value })); setRegErrors(e => ({ ...e, name: '' })) }} />
+                  {regErrors.name && <p className="text-xs text-red-500 mt-1">{regErrors.name}</p>}
                 </div>
                 <div>
                   <label className={LABEL}>Пароль</label>
-                  <input type="password" required minLength={8} className={INPUT}
-                    value={regForm.password} onChange={e => setRegForm(f => ({ ...f, password: e.target.value }))} />
+                  <input type="password" className={INPUT}
+                    value={regForm.password} onChange={e => { setRegForm(f => ({ ...f, password: e.target.value })); setRegErrors(e => ({ ...e, password: '' })) }} />
+                  {regErrors.password && <p className="text-xs text-red-500 mt-1">{regErrors.password}</p>}
                 </div>
                 <div>
                   <label className={LABEL}>Повторіть пароль</label>
-                  <input type="password" required className={INPUT}
-                    value={regForm.confirm} onChange={e => setRegForm(f => ({ ...f, confirm: e.target.value }))} />
+                  <input type="password" className={INPUT}
+                    value={regForm.confirm} onChange={e => { setRegForm(f => ({ ...f, confirm: e.target.value })); setRegErrors(e => ({ ...e, confirm: '' })) }} />
+                  {regErrors.confirm && <p className="text-xs text-red-500 mt-1">{regErrors.confirm}</p>}
                 </div>
                 <button type="submit" disabled={loading}
                   className="w-full py-2.5 bg-brand text-white rounded-lg font-semibold hover:bg-brand-hover transition-colors mt-1 disabled:opacity-60">

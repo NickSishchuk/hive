@@ -34,7 +34,7 @@ export default function HomePage() {
           <h1 className="text-2xl font-bold text-gray-900">
             Привіт, {firstName} 👋
           </h1>
-          <p className="text-gray-500 mt-1">Готова до продуктивної роботи?</p>
+          <p className="text-gray-500 mt-1">Готові до продуктивної роботи?</p>
         </div>
 
         {/* Start work card */}
@@ -74,7 +74,7 @@ export default function HomePage() {
 
         {/* Stat cards */}
         <div className="grid grid-cols-3 gap-4 mb-5">
-          <StatCard icon="⏱" label="Годин сьогодні" value={todayHours} />
+          <StatCard icon="⏰" label="Годин сьогодні" value={todayHours} />
           <StatCard icon="🔥" label="Стрік"          value={streak === '—' ? '—' : `${streak} днів`} accent />
           <StatCard icon="✅" label="Сесій всього"   value={totalSessions} />
         </div>

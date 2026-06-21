@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   LiveKitRoom,
   useLocalParticipant,
@@ -198,9 +199,6 @@ function RoomContent({ onLeave, timerRunning, timeLeft, completedPomodoros, onTo
           <span className="text-sm text-gray-400 w-6">сек</span>
         </div>
 
-        {completedPomodoros > 0 && (
-          <span className="text-xs text-gray-400">🍅 {completedPomodoros}</span>
-        )}
       </div>
     </>
   )
@@ -210,6 +208,7 @@ function RoomContent({ onLeave, timerRunning, timeLeft, completedPomodoros, onTo
 
 export default function RoomPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const [session, setSession] = useState(null)  // { sessionId, roomId, livekitToken, livekitUrl, startedAt }
   const [error,   setError]   = useState('')
@@ -219,13 +218,21 @@ export default function RoomPage() {
   const [timerRunning,       setTimerRunning]       = useState(true)
   const [completedPomodoros, setCompletedPomodoros] = useState(0)
   const sessionEndedRef = useRef(false)
+  const pomodoroProcessedRef = useRef(false)
 
   // ── Start session on mount ─────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false
-    startSession()
-      .then((data) => { if (!cancelled) setSession(data) })
-      .catch((err) => { if (!cancelled) setError(err.response?.data?.message ?? 'Не вдалося розпочати сесію') })
+    const initSession = async () => {
+      try {
+        const data = await startSession()
+        if (!cancelled) setSession(data)
+      } catch (err) {
+        const msg = err.response?.data?.message ?? 'Не вдалося розпочати сесію'
+        if (!cancelled) setError(msg)
+      }
+    }
+    initSession()
     return () => { cancelled = true }
   }, [])
 
@@ -234,30 +241,61 @@ export default function RoomPage() {
     const end = () => {
       if (session?.sessionId && !sessionEndedRef.current) {
         sessionEndedRef.current = true
-        endSession(session.sessionId, { pomodoroCount: completedPomodoros }).catch(() => {})
+        endSession(session.sessionId, { pomodoroCount: completedPomodoros })
+          .then(() => {
+            queryClient.invalidateQueries({ queryKey: ['stats'] })
+            queryClient.invalidateQueries({ queryKey: ['history'] })
+          })
+          .catch(() => {})
       }
     }
     window.addEventListener('beforeunload', end)
     return () => { window.removeEventListener('beforeunload', end); end() }
-  }, [session?.sessionId, completedPomodoros])
+  }, [session?.sessionId, completedPomodoros, queryClient])
 
   // ── Pomodoro countdown ─────────────────────────────────────────────────────
   useEffect(() => {
-    if (!timerRunning || timeLeft === 0) return
+    if (!timerRunning) return
     const id = setInterval(() => {
       setTimeLeft((t) => {
-        if (t <= 1) { setCompletedPomodoros((c) => c + 1); return duration }
-        return t - 1
+        const nextTime = t - 1
+        if (nextTime <= 0) {
+          setCompletedPomodoros((c) => c + 1)
+          if (session?.sessionId) {
+            const oldSessionId = session.sessionId
+            sessionEndedRef.current = true
+            endSession(oldSessionId, { pomodoroCount: 1 })
+              .then(() => {
+                queryClient.invalidateQueries({ queryKey: ['stats'] })
+                queryClient.invalidateQueries({ queryKey: ['history'] })
+              })
+              .finally(() => {
+                sessionEndedRef.current = false
+                startSession()
+                  .then((data) => setSession(data))
+                  .catch((err) => {
+                    console.error('Failed to start new session:', err)
+                    setError('Не вдалося розпочати нову сесію')
+                  })
+              })
+          }
+          return duration
+        }
+        return nextTime
       })
     }, 1000)
     return () => clearInterval(id)
-  }, [timerRunning, timeLeft, duration])
+  }, [timerRunning, duration, session?.sessionId, queryClient])
 
   const handleLeave = async () => {
     if (sessionEndedRef.current) return
     sessionEndedRef.current = true
     if (session?.sessionId) {
-      try { await endSession(session.sessionId, { pomodoroCount: completedPomodoros }) }
+      try {
+        await endSession(session.sessionId, { pomodoroCount: completedPomodoros })
+        queryClient.invalidateQueries({ queryKey: ['stats'] })
+        queryClient.invalidateQueries({ queryKey: ['history'] })
+      }
       catch { /* best-effort */ }
     }
     navigate('/home')

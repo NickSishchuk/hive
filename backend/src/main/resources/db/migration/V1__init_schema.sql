@@ -12,3 +12,5 @@ CREATE INDEX idx_sessions_ended_at ON sessions(ended_at);
 CREATE INDEX idx_sessions_room_id ON sessions(room_id);
 CREATE INDEX idx_user_badges_user_id ON user_badges(user_id);
 CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
+
+

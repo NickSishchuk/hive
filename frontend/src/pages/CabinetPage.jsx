@@ -8,17 +8,25 @@ const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 
 const ACTIVITY_COLORS = [
   'bg-gray-100',
-  'bg-pink-100',
-  'bg-pink-200',
-  'bg-pink-400',
+  'bg-orange-100',
+  'bg-orange-200',
+  'bg-orange-300',
   'bg-brand',
 ]
+
+function getLocalDateKey(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
 function buildActivityGrid(history = []) {
   const counts = {}
   history.forEach((s) => {
     if (!s.endedAt) return
-    const key = s.startedAt.slice(0, 10)
+    const date = new Date(s.startedAt)
+    const key = getLocalDateKey(date)
     counts[key] = (counts[key] || 0) + 1
   })
 
@@ -36,7 +44,7 @@ function buildActivityGrid(history = []) {
     for (let d = 0; d < 7; d++) {
       const date  = new Date(start)
       date.setDate(start.getDate() + w * 7 + d)
-      const key   = date.toISOString().slice(0, 10)
+      const key   = getLocalDateKey(date)
       const count = counts[key] || 0
       const level = count === 0 ? 0 : count === 1 ? 1 : count <= 3 ? 2 : count <= 5 ? 3 : 4
       row.push(level)
@@ -108,7 +116,7 @@ export default function CabinetPage() {
             </div>
           ) : (
             <>
-              <StatCard icon="⏱"  label="Години роботи" value={totalHours} />
+              <StatCard icon="⏰"  label="Години роботи" value={totalHours} />
               <StatCard icon="🔥" label="Стрік"          value={`${stats?.streakCurrent ?? 0} днів`} accent />
               <StatCard icon="✅" label="Сесії"           value={stats?.totalSessions ?? 0} />
             </>

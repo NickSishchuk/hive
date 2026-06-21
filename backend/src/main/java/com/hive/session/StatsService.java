@@ -1,5 +1,8 @@
 package com.hive.session;
 
+import com.hive.badge.BadgeRepository;
+import com.hive.badge.UserBadge;
+import com.hive.badge.UserBadgeRepository;
 import com.hive.user.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -10,13 +13,31 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class StatsService {
 	private final UserStatsRepository userStatsRepository;
+	private final BadgeRepository badgeRepository;
+	private final UserBadgeRepository userBadgeRepository;
 
 	public void recordSession(User user, int durationMinutes, int pomodoroCount) {
 		UserStats stats = userStatsRepository.findById(user.getId()).orElseGet(() -> UserStats.builder().user(user).build());
+		boolean isFirstSession = stats.getTotalSessions() == 0;
 		stats.setTotalMinutes(stats.getTotalMinutes() + durationMinutes);
 		stats.setTotalSessions(stats.getTotalSessions() + 1);
 		recalculateStreak(stats);
 		userStatsRepository.save(stats);
+
+		if (isFirstSession && pomodoroCount > 0) {
+			awardFirstSessionBadge(user);
+		}
+	}
+
+	private void awardFirstSessionBadge(User user) {
+		var badge = badgeRepository.findByKey("first_session").orElse(null);
+		if (badge != null && !userBadgeRepository.existsByUserIdAndBadgeId(user.getId(), badge.getId())) {
+			var userBadge = UserBadge.builder()
+					.userId(user.getId())
+					.badgeId(badge.getId())
+					.build();
+			userBadgeRepository.save(userBadge);
+		}
 	}
 
 	private void recalculateStreak(UserStats stats) {

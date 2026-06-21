@@ -5,7 +5,7 @@ import com.hive.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -26,9 +26,9 @@ public class Session {
 	@JoinColumn(name = "room_id", nullable = false)
 	private Room room;
 	@Column(name = "started_at", nullable = false)
-	private LocalDateTime startedAt;
+	private Instant startedAt;
 	@Column(name = "ended_at")
-	private LocalDateTime endedAt;
+	private Instant endedAt;
 	@Column(name = "duration_minutes")
 	private int durationMinutes;
 	@Column(name = "pomodoro_count")

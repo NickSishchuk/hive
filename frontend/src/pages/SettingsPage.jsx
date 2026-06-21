@@ -38,10 +38,21 @@ function ChangePasswordModal({ onClose }) {
   const [error,   setError]   = useState('')
   const [loading, setLoading] = useState(false)
   const [done,    setDone]    = useState(false)
+  const [errors,  setErrors]  = useState({})
+
+  const validateForm = () => {
+    const newErrors = {}
+    if (!form.current) newErrors.current = 'Це поле є обов\'язковим'
+    if (!form.next) newErrors.next = 'Це поле є обов\'язковим'
+    if (!form.confirm) newErrors.confirm = 'Це поле є обов\'язковим'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    if (!validateForm()) return
     if (form.next !== form.confirm) { setError('Нові паролі не збігаються'); return }
     if (form.next.length < 8)       { setError('Новий пароль має бути не менше 8 символів'); return }
     setLoading(true)
@@ -78,18 +89,21 @@ function ChangePasswordModal({ onClose }) {
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <label className={LABEL}>Поточний пароль</label>
-          <input type="password" required className={INPUT}
-            value={form.current} onChange={e => setForm(f => ({ ...f, current: e.target.value }))} />
+          <input type="password" className={INPUT}
+            value={form.current} onChange={e => { setForm(f => ({ ...f, current: e.target.value })); setErrors(e => ({ ...e, current: '' })) }} />
+          {errors.current && <p className="text-xs text-red-500 mt-1">{errors.current}</p>}
         </div>
         <div>
           <label className={LABEL}>Новий пароль</label>
-          <input type="password" required minLength={8} className={INPUT}
-            value={form.next} onChange={e => setForm(f => ({ ...f, next: e.target.value }))} />
+          <input type="password" className={INPUT}
+            value={form.next} onChange={e => { setForm(f => ({ ...f, next: e.target.value })); setErrors(e => ({ ...e, next: '' })) }} />
+          {errors.next && <p className="text-xs text-red-500 mt-1">{errors.next}</p>}
         </div>
         <div>
           <label className={LABEL}>Підтвердіть новий пароль</label>
-          <input type="password" required className={INPUT}
-            value={form.confirm} onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))} />
+          <input type="password" className={INPUT}
+            value={form.confirm} onChange={e => { setForm(f => ({ ...f, confirm: e.target.value })); setErrors(e => ({ ...e, confirm: '' })) }} />
+          {errors.confirm && <p className="text-xs text-red-500 mt-1">{errors.confirm}</p>}
         </div>
         {error && <p className="text-xs text-red-500">{error}</p>}
         <div className="flex gap-2 pt-1">
@@ -218,7 +232,7 @@ const handleDeleted = async () => {
             </div>
             <div>
               <label className={LABEL}>Email</label>
-              <input type="email" className={INPUT} value={email} onChange={e => setEmail(e.target.value)} />
+              <input type="text" className={INPUT} value={email} onChange={e => setEmail(e.target.value)} />
             </div>
           </Section>
 
