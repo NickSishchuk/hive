@@ -250,7 +250,7 @@ export default function RoomPage() {
       }
     }
     window.addEventListener('beforeunload', end)
-    return () => { window.removeEventListener('beforeunload', end); end() }
+    return () => { window.removeEventListener('beforeunload', end) }
   }, [session?.sessionId, completedPomodoros, queryClient])
 
   // ── Pomodoro countdown ─────────────────────────────────────────────────────
@@ -260,25 +260,31 @@ export default function RoomPage() {
       setTimeLeft((t) => {
         const nextTime = t - 1
         if (nextTime <= 0) {
-          setCompletedPomodoros((c) => c + 1)
-          if (session?.sessionId) {
-            const oldSessionId = session.sessionId
-            sessionEndedRef.current = true
-            endSession(oldSessionId, { pomodoroCount: 1 })
-              .then(() => {
-                queryClient.invalidateQueries({ queryKey: ['stats'] })
-                queryClient.invalidateQueries({ queryKey: ['history'] })
-              })
-              .finally(() => {
-                sessionEndedRef.current = false
-                startSession()
-                  .then((data) => setSession(data))
-                  .catch((err) => {
-                    console.error('Failed to start new session:', err)
-                    setError('Не вдалося розпочати нову сесію')
-                  })
-              })
-          }
+          setCompletedPomodoros((c) => {
+            const newCount = c + 1
+            if (session?.sessionId) {
+              const oldSessionId = session.sessionId
+              sessionEndedRef.current = true
+              endSession(oldSessionId, { pomodoroCount: newCount })
+                .then(() => {
+                  queryClient.invalidateQueries({ queryKey: ['stats'] })
+                  queryClient.invalidateQueries({ queryKey: ['history'] })
+                })
+                .finally(() => {
+                  startSession()
+                    .then((data) => {
+                      setSession(data)
+                      sessionEndedRef.current = false
+                    })
+                    .catch((err) => {
+                      console.error('Failed to start new session:', err)
+                      setError('Не вдалося розпочати нову сесію')
+                      sessionEndedRef.current = false
+                    })
+                })
+            }
+            return newCount
+          })
           return duration
         }
         return nextTime

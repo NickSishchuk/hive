@@ -25,7 +25,10 @@ public class StatsService {
 		userStatsRepository.save(stats);
 
 		if (isFirstSession && pomodoroCount > 0) {
+			System.out.println("DEBUG: Awarding first session badge for user " + user.getId() + " with pomodoroCount=" + pomodoroCount);
 			awardFirstSessionBadge(user);
+		} else {
+			System.out.println("DEBUG: Badge conditions not met - isFirstSession=" + isFirstSession + ", pomodoroCount=" + pomodoroCount);
 		}
 	}
 

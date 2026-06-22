@@ -8,4 +8,5 @@ public class SessionDtos {
     public record EndSessionResponse(UUID sessionId, int durationMinutes, int pomodoroCount, Instant startedAt, Instant endedAt) {}
     public record SessionHistoryItem(UUID sessionId, UUID roomId, int durationMinutes, int pomodoroCount, Instant startedAt, Instant endedAt) {}
     public record StatsResponse(int totalMinutes, int totalSessions, int streakCurrent, int streakMax, int todayMinutes, int weekMinutes) {}
+    public record UpdatePomodoroRequest(@NotNull @Min(0) Integer pomodoroCount) {}
 }

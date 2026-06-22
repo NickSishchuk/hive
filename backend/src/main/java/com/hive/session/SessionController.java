@@ -18,6 +18,8 @@ public class SessionController {
     public StartSessionResponse start(@AuthenticationPrincipal User user) { return sessionService.startSession(user); }
     @PatchMapping("/{id}/end") @Operation(summary = "End a session and save Pomodoro count")
     public EndSessionResponse end(@PathVariable UUID id, @AuthenticationPrincipal User user, @Valid @RequestBody EndSessionRequest request) { return sessionService.endSession(id, user, request); }
+    @PatchMapping("/{id}/pomodoro") @Operation(summary = "Update Pomodoro count for an active session")
+    public void updatePomodoro(@PathVariable UUID id, @AuthenticationPrincipal User user, @Valid @RequestBody UpdatePomodoroRequest request) { sessionService.updatePomodoroCount(id, user, request); }
     @GetMapping("/history") @Operation(summary = "Get session history for current user")
     public List<SessionHistoryItem> history(@AuthenticationPrincipal User user) { return sessionService.getHistory(user); }
 }
